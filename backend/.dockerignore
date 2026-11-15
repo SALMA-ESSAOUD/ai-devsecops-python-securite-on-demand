@@ -1,0 +1,26 @@
+# Environnement virtuel et cache Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Secrets
+.env
+
+# Fichiers Django générés
+staticfiles/
+media/
+
+# Tests et qualité (non nécessaires à l'image de prod)
+tests/
+pytest.ini
+.pytest_cache/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/

@@ -1,0 +1,16 @@
+# Dépendances installées localement (reconstruites dans le conteneur)
+node_modules/
+
+# Artefacts de build
+dist/
+
+# Secrets et configuration locale
+.env
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
