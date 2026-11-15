@@ -1,206 +1,279 @@
-# SecOnDemand
+<div align="center">
 
-> **Conception et mise en œuvre d'une pipeline DevSecOps augmentée par l'IA pour les applications de l'écosystème Python**
->
-> Projet 5 — Module « Sécurité des applications et des services »
-> Cycle ingénieur SIT 3 · Université Cadi Ayyad (UCA) · FST Marrakech · 2026/2027
->
-> Équipe : Hind Zabrati · Imane Arrach · Salma Essaoud · Salma Bender
+<h1>🔐 SecOnDemand</h1>
+
+<p><strong>Plateforme de services de cybersécurité à la demande</strong><br/>
+Test d'intrusion · Surveillance SOC · Audit cloud · Analyse de vulnérabilités</p>
+
+[![CI](https://github.com/SALMA-ESSAOUD/ai-devsecops-python-securite-on-demand/actions/workflows/ci.yml/badge.svg)](https://github.com/SALMA-ESSAOUD/ai-devsecops-python-securite-on-demand/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-5.2_LTS-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose_v2-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/Licence-Académique-lightgrey)](LICENSE)
+
+<p>
+  <a href="#-aperçu">Aperçu</a> ·
+  <a href="#-architecture">Architecture</a> ·
+  <a href="#-démarrage-rapide">Démarrage rapide</a> ·
+  <a href="#-pipeline-ci">Pipeline CI</a> ·
+  <a href="#-sécurité">Sécurité</a> ·
+  <a href="#-contribuer">Contribuer</a>
+</p>
+
+<sub>Projet 5 — Module « Sécurité des applications et des services » · Cycle ingénieur SIT 3 · UCA FST Marrakech · 2026/2027</sub><br/>
+<sub>Équipe : Hind Zabrati · Imane Arrach · Salma Essaoud · Salma Bender</sub>
+
+</div>
 
 ---
 
-## Présentation
+## 📌 Aperçu
 
-**SecOnDemand** est une plateforme web et mobile de vente de services de cybersécurité à la demande : test d'intrusion, surveillance SOC, audit de configuration cloud et analyse de vulnérabilités. Les paiements sont simulés via l'API Stripe en mode test — aucune donnée bancaire réelle n'est traitée.
+**SecOnDemand** est une plateforme web et mobile qui commercialise des **services de cybersécurité à la demande** : test d'intrusion, surveillance SOC, audit de configuration cloud et analyse de vulnérabilités.
 
-L'application sert de support démonstratif à une **pipeline DevSecOps augmentée par l'IA**, qui met en œuvre les onze pratiques Tier 1 définies par Prates & Pereira (2025) et les référentiels OWASP Top 10 : 2025, API Security Top 10, Mobile Top 10 et Top 10 for LLM Applications.
+Le projet a deux objectifs indissociables :
 
----
-
-## Stack technique
-
-| Couche | Technologie |
+| Objectif | Description |
 |---|---|
-| API REST | Django 5.2 LTS · Django REST Framework 3.18 |
-| Base de données | PostgreSQL 17 |
-| Front-end web | React 19 · Vite 8 · TypeScript 7 |
-| Application mobile | React Native (à venir) |
-| Reverse proxy | nginx 1.27 |
-| Conteneurisation | Docker · Docker Compose v2 |
-| CI/CD | GitHub Actions (actions épinglées par SHA) |
-| Infrastructure as Code | Terraform (à venir) |
-| Qualité Python | ruff · pytest · pytest-django |
+| **Application** | Développer une plateforme fonctionnelle avec panier, commande et paiement simulé via Stripe (mode test) |
+| **Pipeline DevSecOps** | Concevoir et démontrer une pipeline CI/CD augmentée par l'IA qui met en œuvre les 11 pratiques Tier 1 (Prates & Pereira, 2025) et couvre les référentiels OWASP Top 10 : 2025, API Security Top 10, Mobile Top 10 et Top 10 for LLM Applications |
+
+> ⚠️ Aucune donnée bancaire réelle n'est traitée. Tous les paiements sont simulés avec les cartes de test Stripe.
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
-```
-                        ┌─────────────────────────────────────────┐
-                        │              Internet (HTTPS)            │
-                        └──────────────┬──────────────────────────┘
-                                       │ :8080
-                               ┌───────▼────────┐
-                               │  nginx (proxy) │  X-Content-Type-Options
-                               │                │  X-Frame-Options
-                               └──┬─────────┬───┘  Referrer-Policy
-                      /api/        │         │        /
-               ┌──────▼──────┐    │    ┌────▼──────────┐
-               │   Backend   │    │    │   Front-end   │
-               │  Django +   │    │    │  React (Vite) │
-               │    DRF      │    │    └───────────────┘
-               └──────┬──────┘    │
-                      │           │  Réseau interne (backend_net)
-               ┌──────▼──────┐
-               │ PostgreSQL  │  ← aucun port exposé à l'hôte
-               └─────────────┘
+```mermaid
+graph TB
+    subgraph "Internet"
+        U1[🌐 Navigateur<br/>React / Vite]
+        U2[📱 Mobile<br/>React Native]
+    end
+
+    subgraph "DMZ — Port 8080"
+        NX[nginx 1.27<br/>Reverse proxy<br/>En-têtes de sécurité]
+    end
+
+    subgraph "Réseau privé Docker"
+        BE[🐍 Backend Django<br/>Django REST Framework<br/>gunicorn · non-root]
+        FE[⚛️ Frontend React<br/>nginx · non-root]
+        DB[(🗄️ PostgreSQL 17<br/>Aucun port exposé)]
+    end
+
+    subgraph "Services tiers"
+        ST[💳 Stripe<br/>Mode test]
+    end
+
+    U1 -->|HTTPS| NX
+    U2 -->|HTTPS + épinglage| NX
+    NX -->|/api/*| BE
+    NX -->|/* | FE
+    BE <-->|TLS interne| DB
+    BE -->|HTTPS + clé secrète| ST
+    ST -->|Webhook signé| BE
 ```
 
-**Trois modules métier :**
-- **Comptes et accès** — inscription, authentification, rôles client / administrateur
-- **Missions et rapports** — catalogue des prestations, suivi de l'état, téléchargement sécurisé
-- **Paiements** — montant calculé côté serveur, webhooks Stripe signés, reçus
+### Modules métier
+
+| Module | Responsabilités |
+|---|---|
+| **Comptes et accès** | Inscription, authentification JWT, rôles client / administrateur, MFA TOTP |
+| **Missions et rapports** | Catalogue des prestations, suivi de l'état, téléchargement sécurisé par lien signé |
+| **Paiements** | Montant calculé côté serveur, création PaymentIntent, validation webhook, émission de reçus |
 
 ---
 
-## Modèle de menaces
-
-Le modèle de menaces (méthode STRIDE, v1.0) est versionné dans [`docs/threat-model/`](docs/threat-model/).
-Il couvre **50 menaces** (3 critiques, 17 élevées, 28 modérées, 2 faibles) réparties sur neuf domaines :
-authentification, contrôle d'accès, paiement, rapports, mobile, infrastructure, journalisation, pipeline CI/CD et IA.
-
-Les trois menaces critiques — BOLA (T07), modification du montant (T17), bourrage d'identifiants (T01) — disposent chacune d'une contre-mesure vérifiée par un test automatisé bloquant en CI.
-
----
-
-## Structure du dépôt
+## 🗂️ Structure du dépôt
 
 ```
-.
-├── backend/                  # API Django + DRF
+ai-devsecops-python-securite-on-demand/
+│
+├── backend/                        # API REST (Django + DRF)
 │   ├── apps/
-│   │   └── health/           # GET /api/health/ → {"status": "ok"}
+│   │   └── health/                 # GET /api/health/ → {"status":"ok"}
 │   ├── config/
 │   │   └── settings/
-│   │       ├── base.py       # Paramètres communs
-│   │       ├── dev.py        # Développement local
-│   │       └── prod.py       # Production (SECRET_KEY obligatoire)
-│   ├── tests/                # pytest
-│   ├── Dockerfile            # Image python:3.14-slim, utilisateur non root
-│   ├── requirements.txt      # Versions figées
-│   └── ruff.toml             # Configuration du linter
-├── web/                      # Front-end React (Vite + TypeScript)
+│   │       ├── base.py             # Paramètres communs (DEBUG=False par défaut)
+│   │       ├── dev.py              # Développement local
+│   │       └── prod.py             # Production (SECRET_KEY obligatoire)
+│   ├── tests/                      # pytest — sans dépendance à la DB pour /health/
+│   ├── Dockerfile                  # python:3.14-slim · utilisateur non root (UID 1001)
+│   ├── requirements.txt            # Versions figées et vérifiées
+│   └── ruff.toml                   # Linter Python
+│
+├── web/                            # Front-end (React 19 · Vite 8 · TypeScript 7)
 │   ├── src/
-│   │   ├── App.tsx           # Appel /api/health/, affichage du statut
+│   │   ├── App.tsx                 # Appel /api/health/ · affichage du statut
 │   │   └── main.tsx
-│   ├── Dockerfile            # Build multi-étapes, nginx non root
-│   └── nginx.conf            # Port 8080, SPA routing
-├── mobile/                   # Application React Native (à venir)
+│   ├── Dockerfile                  # Build multi-étapes · nginx:1.27-alpine non root
+│   ├── nginx.conf                  # Port 8080 · SPA routing
+│   └── vite.config.ts              # Proxy /api/ → localhost:8000 en dev
+│
+├── mobile/                         # Application React Native (à venir)
+│
 ├── infra/
 │   └── nginx/
-│       └── nginx.conf        # Reverse proxy + en-têtes de sécurité
+│       └── nginx.conf              # Reverse proxy · X-Frame-Options · nosniff · Referrer-Policy
+│
 ├── docs/
-│   └── threat-model/         # Modèle de menaces STRIDE (v1.0)
+│   └── threat-model/               # Modèle de menaces STRIDE v1.0 (50 menaces · T01–T50)
+│
 ├── .github/
 │   ├── workflows/
-│   │   └── ci.yml            # Lint · Tests · Build Docker (SHA épinglés)
-│   ├── CODEOWNERS            # Revue obligatoire : @SALMA-ESSAOUD
-│   └── pull_request_template.md  # Checklist sécurité (T01–T50)
-├── docker-compose.yml        # db · backend · web · nginx
-├── .env.example              # Variables d'environnement (valeurs factices)
+│   │   └── ci.yml                  # Lint · Tests · Build Docker (SHA 40 car. épinglés)
+│   ├── CODEOWNERS                  # Revue obligatoire : @SALMA-ESSAOUD
+│   └── pull_request_template.md    # Checklist sécurité liée au modèle de menaces
+│
+├── docker-compose.yml              # Services : db · backend · web · nginx
+├── .env.example                    # Template des variables d'environnement
 └── .gitignore
 ```
 
 ---
 
-## Démarrage rapide
+## 🚀 Démarrage rapide
 
 ### Prérequis
 
-- Docker ≥ 24 et Docker Compose v2
-- Git
+- [Docker](https://docs.docker.com/get-docker/) ≥ 24 et Docker Compose v2
+- [Git](https://git-scm.com/)
 
-### 1 — Cloner et configurer l'environnement
+### 1 — Cloner le dépôt
 
 ```bash
 git clone git@github.com:SALMA-ESSAOUD/ai-devsecops-python-securite-on-demand.git
 cd ai-devsecops-python-securite-on-demand
-cp .env.example .env
-# Éditer .env et remplacer toutes les valeurs "changeme-"
 ```
 
-### 2 — Démarrer tous les services
+### 2 — Configurer l'environnement
+
+```bash
+cp .env.example .env
+# Ouvrir .env et remplacer toutes les valeurs "changeme-"
+```
+
+### 3 — Démarrer tous les services
 
 ```bash
 docker compose up --build
 ```
 
-L'application est accessible sur **<http://localhost:8080>**.
-L'endpoint de santé répond sur **<http://localhost:8080/api/health/>**.
+| Service | URL |
+|---|---|
+| Application complète | http://localhost:8080 |
+| Endpoint de santé API | http://localhost:8080/api/health/ |
 
-### 3 — Développement backend (hors Docker)
+### Développement backend (hors Docker)
 
 ```bash
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 export DJANGO_SETTINGS_MODULE=config.settings.dev
-# Pas de PostgreSQL local requis pour les tests unitaires
-pytest
+pytest                   # Tests sans base de données requise
 ```
 
-### 4 — Développement front-end (hors Docker)
+### Développement front-end (hors Docker)
 
 ```bash
 cd web
 npm install
-npm run dev        # Proxy /api/ → http://localhost:8000 (Vite)
+npm run dev              # Vite démarre sur http://localhost:5173
+                         # Le proxy /api/ redirige vers http://localhost:8000
 ```
 
 ---
 
-## Pipeline CI/CD
+## ⚙️ Pipeline CI
 
-Le workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) se déclenche sur chaque `push` vers `main` et sur chaque `pull_request`.
+Le workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) se déclenche automatiquement sur chaque `push` vers `main` et sur chaque `pull_request`.
 
-| Job | Outil | Ce qui est vérifié |
-|---|---|---|
-| `lint` | ruff 0.17.5 | Style et erreurs statiques Python |
-| `tests` | pytest + service PostgreSQL | Route `/api/health/`, non-régression |
-| `docker-build` | docker/build-push-action | Build des images backend et web (sans push) |
+```
+push / pull_request
+        │
+        ├─── lint ──────────── ruff 0.17.5
+        │                      Vérifie le style et les erreurs statiques Python
+        │
+        ├─── tests ─────────── pytest 9.2 + service PostgreSQL 17
+        │                      Route /api/health/ · non-régression
+        │
+        └─── docker-build ──── Conditionné à lint + tests
+             (needs: lint, tests)
+                                Build backend (python:3.14-slim)
+                                Build web    (node:22-alpine → nginx:1.27-alpine)
+                                push: false  ← jamais de push en CI
+```
 
-**Règles de sécurité CI :**
-- `pull_request_target` **jamais** utilisé
-- `permissions: contents: read` au niveau workflow
-- Chaque action épinglée par son SHA de commit complet (40 caractères)
+**Règles de sécurité du workflow :**
 
----
-
-## Sécurité — points clés
-
-| Décision | Justification |
+| Règle | Valeur |
 |---|---|
-| `DEBUG=False` par défaut | Évite la fuite d'informations techniques en production (T15) |
-| `SECRET_KEY` depuis l'environnement, erreur explicite si absente en prod | Empêche le démarrage silencieux avec une clé vide (T05) |
-| Conteneurs non root (UID 1001 / 101) | Réduit la surface d'attaque en cas d'évasion (T34) |
-| PostgreSQL sans port exposé à l'hôte | Interdit l'accès réseau direct à la base (T32) |
-| Réseau Docker isolé `backend_net` | nginx et web ne peuvent pas joindre la DB directement |
-| En-têtes HTTP : `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` | Défense en profondeur contre le sniffing MIME et le clickjacking (T36) |
-| Actions CI épinglées par SHA | Protection contre les attaques supply-chain sur les workflows (T42) |
-| `CODEOWNERS` + PR template | Revue humaine obligatoire, traçabilité vers le modèle de menaces (T43) |
+| Trigger interdit | `pull_request_target` — jamais utilisé |
+| Permissions workflow | `contents: read` uniquement |
+| Épinglage des actions | SHA 40 caractères (commit exact, non le tag) |
+
+<details>
+<summary>SHA des actions utilisées</summary>
+
+| Action | Version | SHA |
+|---|---|---|
+| `actions/checkout` | v4 | `11d5960a326750d5838078e36cf38b85af677262` |
+| `actions/setup-python` | v5 | `a26af69be951a213d495a4c3e4e4022e16d87065` |
+| `docker/setup-buildx-action` | v3 | `8d2750c68a42422c14e847fe6c8ac0403b4cbd6f` |
+| `docker/build-push-action` | v6 | `10e90e3645eae34f1e60eeb005ba3a3d33f178e8` |
+
+</details>
 
 ---
 
-## Contribuer
+## 🔒 Sécurité
+
+### Modèle de menaces
+
+Le modèle de menaces (méthode STRIDE, v1.0) est versionné dans [`docs/threat-model/`](docs/threat-model/).
+
+| Niveau | Critique | Élevé | Modéré | Faible | Total |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Menaces | 3 | 17 | 28 | 2 | **50** |
+
+Les trois menaces critiques disposent chacune d'un **test automatisé bloquant** en CI :
+
+| ID | Menace | Contre-mesure principale |
+|---|---|---|
+| T01 | Bourrage d'identifiants | Argon2 · 5 tentatives / 15 min · MFA |
+| T07 | Accès aux objets d'un autre client (BOLA) | Querysets filtrés par propriétaire · UUID |
+| T17 | Modification du montant du paiement | Montant calculé côté serveur uniquement |
+
+### Décisions de sécurité de l'infrastructure
+
+| Décision | Menace couverte |
+|---|---|
+| `DEBUG=False` par défaut dans `base.py` | T15 — fuite d'informations techniques |
+| `SECRET_KEY` depuis l'env, erreur explicite si absente en prod | T05 — falsification JWT |
+| Conteneurs non root (UID 1001 / UID 101) | T34 — évasion de conteneur |
+| PostgreSQL sans port exposé à l'hôte | T32 — accès réseau direct à la DB |
+| Réseau Docker isolé `backend_net` | T32 — isolation DB / nginx |
+| En-têtes HTTP : `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` | T36 — mauvaise configuration |
+| Actions CI épinglées par SHA 40 caractères | T42 — compromission de workflow |
+| `CODEOWNERS` + template de PR | T43 — fusion de code non revu |
+
+---
+
+## 🤝 Contribuer
 
 1. Créer une branche depuis `main`
-2. Ouvrir une pull request — le template de PR s'affiche automatiquement
+2. Ouvrir une **pull request** — le template s'affiche automatiquement
 3. Remplir la **checklist de sécurité** et indiquer la menace concernée (T01–T50)
-4. Le CI doit passer (lint + tests + build) avant tout merge
+4. Le CI doit passer intégralement (lint + tests + build)
 5. La revue de `@SALMA-ESSAOUD` est requise (CODEOWNERS)
 
 ---
 
-## Licence
+## 📄 Licence
 
 Projet universitaire — usage académique uniquement.
+Université Cadi Ayyad (UCA) · FST Marrakech · 2026/2027
