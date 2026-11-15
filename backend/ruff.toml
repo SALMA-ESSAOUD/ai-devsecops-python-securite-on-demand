@@ -1,0 +1,20 @@
+# Configuration ruff pour le backend Django
+# https://docs.astral.sh/ruff/configuration/
+
+[lint]
+# Règles activées : defaults (E, F) + ruff-specific (RUF)
+select = ["E", "F", "RUF"]
+
+# F403 (star import), F401 (unused import) et F405 (may be from star import)
+# sont désactivés globalement car les fichiers settings Django utilisent
+# "from .base import *" de façon idiomatique.
+ignore = ["F403", "F401", "F405"]
+
+# EXE001 : ruff vérifie si le fichier est exécutable sur le FS local,
+# ce qui n'est pas pertinent en CI (checkout sans bits exec).
+# On désactive cette règle.
+extend-ignore = ["EXE001"]
+
+[lint.per-file-ignores]
+# Dans les settings, les star imports sont intentionnels.
+"config/settings/*.py" = ["F403", "F401", "F405"]

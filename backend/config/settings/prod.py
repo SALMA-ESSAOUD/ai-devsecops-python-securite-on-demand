@@ -7,7 +7,7 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 
-from .base import *  # noqa: F401, F403
+from .base import *
 
 # Validation stricte de SECRET_KEY en production
 _secret = os.environ.get("DJANGO_SECRET_KEY", "")
@@ -16,7 +16,7 @@ if not _secret:
         "La variable d'environnement DJANGO_SECRET_KEY est absente ou vide. "
         "Définissez-la avant de démarrer l'application en production."
     )
-SECRET_KEY = _secret  # noqa: F405
+SECRET_KEY = _secret
 
 # HTTPS
 SECURE_SSL_REDIRECT = True
