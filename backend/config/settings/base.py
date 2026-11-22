@@ -27,8 +27,15 @@ INSTALLED_APPS = [
     "django.contrib.auth",        # requis par DRF pour l'authentification
     "django.contrib.staticfiles",
     "rest_framework",
+    "apps.accounts",
     "apps.health",
 ]
+
+# --- Utilisateurs ------------------------------------------------------------
+# Modèle d'utilisateur personnalisé, à définir avant la première migration de
+# toute application qui y fait référence (Django ne permet pas de le changer
+# proprement ensuite).
+AUTH_USER_MODEL = "accounts.User"
 
 # --- Django REST Framework ---------------------------------------------------
 REST_FRAMEWORK = {

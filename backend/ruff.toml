@@ -18,3 +18,7 @@ extend-ignore = ["EXE001"]
 [lint.per-file-ignores]
 # Dans les settings, les star imports sont intentionnels.
 "config/settings/*.py" = ["F403", "F401", "F405"]
+
+# Migrations générées par Django : les listes de classe (dependencies,
+# operations) ne sont pas annotées ClassVar, c'est le format standard.
+"apps/*/migrations/*.py" = ["RUF012"]
