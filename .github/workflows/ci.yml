@@ -56,6 +56,10 @@ jobs:
           POSTGRES_DB: test_db
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
+        # Le job s'exécute directement sur la machine du runner : sans ce
+        # mappage de port, les tests ne peuvent pas joindre PostgreSQL.
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U test_user -d test_db"
           --health-interval 10s
@@ -100,15 +104,4 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f  # v3
 
       - name: Build backend image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6
-        with:
-          context: ./backend
-          push: false
-          tags: secondemand-backend:ci
-
-      - name: Build web image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6
-        with:
-          context: ./web
-          push: false
-          tags: secondemand-web:ci
+        uses: docker/build-push-action@10e90e3645eae
